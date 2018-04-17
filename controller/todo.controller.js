@@ -34,3 +34,18 @@ module.exports.getTodo = async (req, res) => {
     } catch (err) {
     }
 };
+
+module.exports.deleteTodo = async (req, res) => {
+    let todo = {};
+    try {
+        const id = req.params.id;
+        if (!ObjectID.isValid(id))
+            res.status(400).send({message: 'Invalid id'});
+
+        todo = await Todo.findByIdAndRemove(id);
+        if (!todo)
+            res.status(404).send({message: 'No user found'});
+        res.send(todo)
+    } catch (e) {
+    }
+};

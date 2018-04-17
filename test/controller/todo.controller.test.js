@@ -1,11 +1,13 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const app = require('../../server');
 const Todo = require('../../model/Todo');
 
+const todo = {text: 'Something to do', _id: new ObjectID()};
+
 beforeEach(async () => {
-    const todo = {text: 'Something to do', _id: '5ad5bffffaf2952ce8ad1f2e'};
     await Todo.remove({});
     const newTodo = new Todo(todo);
     await newTodo.save()
@@ -82,7 +84,7 @@ describe('GET: /todos', () => {
     });
 
     it('should get a todo by id while id is valid and it exists', (done) => {
-        const id = '5ad5bffffaf2952ce8ad1f2e'; // it is a valid id
+        const id = todo._id.toHexString(); // it is a valid id
         request(app)
             .get(`/api/todos/${id}`)
             .expect(200)
@@ -112,6 +114,41 @@ describe('GET: /todos', () => {
             })
     });
 
+});
+
+describe('DELETE /todos/delete', () => {
+    it('should delete the todo with the given id', (done) => {
+        const id = todo._id.toHexString();
+        request(app)
+            .delete(`/api/todos/delete/${id}`)
+            .expect(200)
+            .expect(async(res) => {
+                expect(res.body._id).toEqual(id);
+                const count =await Todo.count();
+                expect(count).toBe(0)
+            })
+            .end(err => {
+                !!err ? done(err) : done()
+            })
+    });
+    it('should return 404 if todo not found', (done) => {
+        const id = '5ad5bffffaf2952ce8ad1f1e'; // it is a valid id
+        request(app)
+            .delete(`/api/todos/delete/${id}`)
+            .expect(404)
+            .end(err => {
+                !!err ? done(err) : done()
+            })
+    });
+    it('should return 400 if id is not valid', (done) => {
+        const id = '5ad5bffffaf2952ce8a'; // it is an invalid id
+        request(app)
+            .delete(`/api/todos/delete/${id}`)
+            .expect(400)
+            .end(err => {
+                !!err ? done(err) : done()
+            })
+    });
 });
 
 
