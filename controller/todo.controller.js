@@ -1,5 +1,7 @@
-const Todo = require('../model/Todo');
 const {ObjectID} = require('mongodb');
+const _ = require('lodash');
+
+const Todo = require('../model/Todo');
 
 module.exports.addTodo = async (req, res) => {
     const newTodo = new Todo(req.body);
@@ -19,33 +21,52 @@ module.exports.getTodos = async (req, res) => {
     }
 };
 module.exports.getTodo = async (req, res) => {
-    let todo = {};
     try {
         const id = req.params.id;
 
         if (!ObjectID.isValid(id))
             res.status(400).send({message: 'Invalid id'});
 
-        todo = await Todo.findById(id);
+        const todo = await Todo.findById(id);
 
         if (!todo)
-            res.status(404).send({message: 'No user found'});
+            res.status(404).send({message: 'No todo found'});
         res.send(todo);
     } catch (err) {
     }
 };
 
 module.exports.deleteTodo = async (req, res) => {
-    let todo = {};
     try {
         const id = req.params.id;
         if (!ObjectID.isValid(id))
             res.status(400).send({message: 'Invalid id'});
 
-        todo = await Todo.findByIdAndRemove(id);
+        const todo = await Todo.findByIdAndRemove(id);
         if (!todo)
-            res.status(404).send({message: 'No user found'});
+            res.status(404).send({message: 'No todo found'});
         res.send(todo)
     } catch (e) {
+    }
+};
+module.exports.updateTodo = async (req, res) => {
+    const id = req.params.id;
+    try {
+        if (!ObjectID.isValid(id))
+            res.status(400).send({message: 'Invalid id'});
+
+        const body = _.pick(req.body, ['text', 'completed']);
+        if (!_.isBoolean(body.completed) || (!body.completed && body.completed !== false))
+            res.status(400).send({message: 'Invalid post body'});
+
+        if (body.completed) {
+            body.completedAt = new Date();
+            }
+        const todo = await Todo.findByIdAndUpdate(id, {$set: body}, {new:true});
+        if (!todo)
+            res.status(404).send({message: 'No todo found'});
+        res.send(todo)
+    } catch (e) {
+        res.status(400).send()
     }
 };

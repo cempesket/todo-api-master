@@ -11,5 +11,7 @@ router.post('/',todoController.addTodo);
 
 router.delete('/delete/:id',todoController.deleteTodo);
 
+router.patch('/update/:id',todoController.updateTodo);
+
 
 module.exports = router;

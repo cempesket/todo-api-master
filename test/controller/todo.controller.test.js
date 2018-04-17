@@ -91,18 +91,14 @@ describe('GET: /todos', () => {
             .expect(res => {
                 expect(res.body.text).toEqual('Something to do')
             })
-            .end(err => {
-                !!err ? done(err) : done()
-            })
+            .end(done)
     });
     it('should return 404 if todo not found', (done) => {
         const id = '5ad5bffffaf2952ce8ad1f1e'; // it is a valid id
         request(app)
             .get(`/api/todos/${id}`)
             .expect(404)
-            .end(err => {
-                !!err ? done(err) : done()
-            })
+            .end(done)
     });
     it('should return 400 if id is not valid', (done) => {
         const id = '5ad5bffffaf2952ce8ad1f1'; // it is an invalid id
@@ -122,9 +118,9 @@ describe('DELETE /todos/delete', () => {
         request(app)
             .delete(`/api/todos/delete/${id}`)
             .expect(200)
-            .expect(async(res) => {
+            .expect(async (res) => {
                 expect(res.body._id).toEqual(id);
-                const count =await Todo.count();
+                const count = await Todo.count();
                 expect(count).toBe(0)
             })
             .end(err => {
@@ -148,6 +144,25 @@ describe('DELETE /todos/delete', () => {
             .end(err => {
                 !!err ? done(err) : done()
             })
+    });
+});
+
+describe('PATCH /todos/update', () => {
+    it('should update the todo with given id', (done) => {
+        const id = todo._id.toHexString();
+        const testUpdatedTodo = {completed: true};
+        request(app)
+            .patch(`/api/todos/update/${id}`)
+            .send(testUpdatedTodo)
+            .expect(200)
+            .expect(async (res) => {
+                expect(res.body._id).toEqual(id);
+                const updatedTodo = await Todo.findById(id);
+                expect(updatedTodo.completed).toBe(true)
+            })
+            .end((err => {
+                !!err ? done(err) : done()
+            }))
     });
 });
 
