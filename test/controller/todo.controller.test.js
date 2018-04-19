@@ -1,17 +1,12 @@
 const expect = require('expect');
 const request = require('supertest');
-const {ObjectID} = require('mongodb');
 
 const app = require('../../server');
 const Todo = require('../../model/Todo');
+const {todo, populate} = require('../seed/todo.seed');
 
-const todo = {text: 'Something to do', _id: new ObjectID()};
 
-beforeEach(async () => {
-    await Todo.remove({});
-    const newTodo = new Todo(todo);
-    await newTodo.save()
-});
+beforeEach(populate);
 
 describe('POST: /todos', () => {
 
@@ -158,6 +153,7 @@ describe('PATCH /todos/update', () => {
             .expect(async (res) => {
                 expect(res.body._id).toEqual(id);
                 const updatedTodo = await Todo.findById(id);
+                if(updatedTodo)
                 expect(updatedTodo.completed).toBe(true)
             })
             .end((err => {

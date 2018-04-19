@@ -28,11 +28,36 @@ const userSchema = new Schema({
 userSchema.methods.generateToken = async function () {
     let user = this;
     const access = 'auth';
-    console.log(user);
     let token = await jwt.sign({id: user._id, access: access}, 'secret');
     user.tokens = user.tokens.concat({access, token});
-    await user.save();
-    return token;
+    const insertedUser = await user.save();
+    return {token, insertedUser};
+};
+userSchema.methods.removeToken = async function (token) {
+    let user = this;
+    try {
+        await user.update({
+            $pull: {
+                tokens: {token}
+            }
+        })
+    } catch (e) {
+        throw e
+    }
+};
+userSchema.statics.identifyUser = async function (email, password) {
+    let User = this;
+    try {
+        const user = await User.findOne({email: email});
+        if (!user)
+            return false;
+        const isUser = bcrypt.compare(password, user.password);
+        if (isUser)
+            return user;
+    } catch (e) {
+        return false
+    }
+    return false
 };
 userSchema.statics.findByToken = async function (token) {
     let User = this;
