@@ -10,6 +10,7 @@ const {user, populateUser} = require('../seed/user.seed');
 
 beforeEach(populateUser);
 
+
 describe('POST /user', () => {
     it('should save user, return status 200 as response and hash the password', (done) => {
         const user = {email: 'pesketcem@gmail.com', password: '123456'};

@@ -10,6 +10,8 @@ const app = express();
 
 app.use(bodyParser.json());
 
+
+
 app.get('/', (req, res) => {
     res.send({message: 'Welcome. Go to /api'})
 });

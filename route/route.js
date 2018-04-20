@@ -12,7 +12,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
     res.send({message: 'Welcome to todo api'})
 });
-router.use('/todos', auth.isAuth, todoRouter);
+router.use('/todos', auth.isAuth,auth.isAuthDummy('admin'), todoRouter);
 router.use('/user', userRouter);
 
 module.exports = router;
