@@ -4,7 +4,7 @@ const _ = require('lodash');
 const Todo = require('../model/Todo');
 
 module.exports.addTodo = async (req, res) => {
-    const newTodo = new Todo(req.body);
+    const newTodo = new Todo({...req.body, userId: req.user.id});
     try {
         const insertedTodo = await newTodo.save();
         res.send(insertedTodo)
@@ -14,7 +14,7 @@ module.exports.addTodo = async (req, res) => {
 };
 module.exports.getTodos = async (req, res) => {
     try {
-        const todos = await Todo.find({});
+        const todos = await Todo.find({userId:req.user.id});
         res.send(todos)
     } catch (err) {
         res.status(400).send(err.text)
@@ -27,7 +27,7 @@ module.exports.getTodo = async (req, res) => {
         if (!ObjectID.isValid(id))
             res.status(400).send({message: 'Invalid id'});
 
-        const todo = await Todo.findById(id);
+        const todo = await Todo.findOne({_id:id,userId:req.user.id});
 
         if (!todo)
             res.status(404).send({message: 'No todo found'});
@@ -42,7 +42,7 @@ module.exports.deleteTodo = async (req, res) => {
         if (!ObjectID.isValid(id))
             res.status(400).send({message: 'Invalid id'});
 
-        const todo = await Todo.findByIdAndRemove(id);
+        const todo = await Todo.findOneAndRemove({_id:id,userId:req.user.id});
         if (!todo)
             res.status(404).send({message: 'No todo found'});
         res.send(todo)
@@ -61,8 +61,8 @@ module.exports.updateTodo = async (req, res) => {
 
         if (body.completed) {
             body.completedAt = new Date();
-            }
-        const todo = await Todo.findByIdAndUpdate(id, {$set: body}, {new:true});
+        }
+        const todo = await Todo.findOneAndUpdate({_id:id,userId:req.user.id}, {$set: body}, {new: true});
         if (!todo)
             res.status(404).send({message: 'No todo found'});
         res.send(todo)
